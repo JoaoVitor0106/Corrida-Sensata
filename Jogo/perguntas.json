@@ -1,0 +1,158 @@
+{
+  "multipla_escolha": [
+    {
+      "id": 1,
+      "pergunta": "Qual a capital da França?",
+      "opcoes": ["Berlim", "Madri", "Paris", "Lisboa"],
+      "resposta": 2
+    },
+    {
+      "id": 2,
+      "pergunta": "Quem descobriu o Brasil?",
+      "opcoes": ["Dom Pedro I", "Pedro Álvares Cabral", "Tiradentes", "Machado de Assis"],
+      "resposta": 1
+    },
+    {
+      "id": 3,
+      "pergunta": "Qual é o resultado de 7 x 8?",
+      "opcoes": ["54", "56", "64", "58"],
+      "resposta": 1
+    },
+    {
+      "id": 4,
+      "pergunta": "Qual elemento químico tem o símbolo O?",
+      "opcoes": ["Ouro", "Oxigênio", "Osmium", "Óxido"],
+      "resposta": 1
+    },
+    {
+      "id": 5,
+      "pergunta": "Qual oceano banha a costa leste do Brasil?",
+      "opcoes": ["Oceano Pacífico", "Oceano Atlântico", "Oceano Índico", "Oceano Ártico"],
+      "resposta": 1
+    },
+    {
+      "id": 6,
+      "pergunta": "Quantos continentes existem no mundo?",
+      "opcoes": ["4", "5", "6", "7"],
+      "resposta": 3
+    },
+    {
+      "id": 7,
+      "pergunta": "Qual o maior animal terrestre?",
+      "opcoes": ["Girafa", "Elefante Africano", "Rinoceronte", "Hipopamo"],
+      "resposta": 1
+    },
+    {
+      "id": 8,
+      "pergunta": "Quem pintou a Mona Lisa?",
+      "opcoes": ["Pablo Picasso", "Vincent van Gogh", "Leonardo da Vinci", "Claude Monet"],
+      "resposta": 2
+    },
+    {
+      "id": 9,
+      "pergunta": "Qual é o maior planeta do nosso sistema solar?",
+      "opcoes": ["Marte", "Júpiter", "Saturno", "Terra"],
+      "resposta": 1
+    },
+    {
+      "id": 10,
+      "pergunta": "Quem escreveu 'Dom Quixote'?",
+      "opcoes": ["William Shakespeare", "Miguel de Cervantes", "Machado de Assis", "Gabriel García Márquez"],
+      "resposta": 1
+    },
+    {
+      "id": 11,
+      "pergunta": "Qual gás as plantas absorvem para fazer fotossíntese?",
+      "opcoes": ["Oxigênio", "Nitrogênio", "Dióxido de Carbono", "Hidrogênio"],
+      "resposta": 2
+    },
+    {
+      "id": 12,
+      "pergunta": "Qual é a capital da Argentina?",
+      "opcoes": ["Santiago", "Montevidéu", "Bogotá", "Buenos Aires"],
+      "resposta": 3
+    },
+    {
+      "id": 13,
+      "pergunta": "Em que ano o homem pisou na lua pela primeira vez?",
+      "opcoes": ["1965", "1969", "1972", "1959"],
+      "resposta": 1
+    },
+    {
+      "id": 14,
+      "pergunta": "Qual destes animais é um mamífero marinho?",
+      "opcoes": ["Tubarão", "Orca", "Salmão", "Enguia"],
+      "resposta": 1
+    },
+    {
+      "id": 15,
+      "pergunta": "Qual o componente principal do vidro?",
+      "opcoes": ["Ferro", "Areia", "Plástico", "Alumínio"],
+      "resposta": 1
+    },
+    {
+      "id": 16,
+      "pergunta": "Qual a montanha mais alta do mundo?",
+      "opcoes": ["K2", "Monte Everest", "Monte Fuji", "Monte Kilimanjaro"],
+      "resposta": 1
+    },
+    {
+      "id": 17,
+      "pergunta": "Qual o maior rio do mundo em volume de água?",
+      "opcoes": ["Rio Nilo", "Rio Amazonas", "Rio Mississipi", "Rio Yangtzé"],
+      "resposta": 1
+    },
+    {
+      "id": 18,
+      "pergunta": "Qual país tem o maior número de pirâmides?",
+      "opcoes": ["Egito", "Sudão", "México", "China"],
+      "resposta": 1
+    },
+    {
+      "id": 19,
+      "pergunta": "Qual o menor país do mundo?",
+      "opcoes": ["Mônaco", "Vaticano", "Nauru", "San Marino"],
+      "resposta": 1
+    },
+    {
+      "id": 20,
+      "pergunta": "Qual animal é conhecido por ter 8 braços?",
+      "opcoes": ["Estrela do Mar", "Lula", "Polvo", "Medusa"],
+      "resposta": 2
+    },
+    {
+      "id": 21,
+      "pergunta": "Qual o nome do primeiro homem a viajar para o espaço?",
+      "opcoes": ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "Valentina Tereshkova"],
+      "resposta": 2
+    },
+    {
+      "id": 22,
+      "pergunta": "Qual é a língua mais falada no mundo?",
+      "opcoes": ["Inglês", "Espanhol", "Mandarim", "Hindi"],
+      "resposta": 2
+    },
+    {
+      "id": 23,
+      "pergunta": "Qual é o nome do criador da Microsoft?",
+      "opcoes": ["Steve Jobs", "Mark Zuckerberg", "Bill Gates", "Elon Musk"],
+      "resposta": 2
+    },
+    {
+      "id": 24,
+      "pergunta": "Qual instrumento musical tem cordas e é tocado com um arco?",
+      "opcoes": ["Guitarra", "Violino", "Piano", "Flauta"],
+      "resposta": 1
+    },
+    {
+      "id": 25,
+      "pergunta": "Qual o maior deserto do mundo?",
+      "opcoes": ["Deserto do Saara", "Deserto da Arábia", "Deserto de Gobi", "Deserto da Antártida"],
+      "resposta": 3
+    }
+  ],
+  "descritiva": {
+    "pergunta": "O que causa o fenômeno das marés?",
+    "resposta_certa": "A atração gravitacional da Lua e do Sol sobre a Terra."
+  }
+}

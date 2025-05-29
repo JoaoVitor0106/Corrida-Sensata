@@ -1,0 +1,18 @@
+#constantes.py
+import pygame
+
+LARGURA, ALTURA = 800, 600
+ALTURA_PISTA = 400
+
+MOVE_NORMAL = 20
+MOVE_NITRO = 30
+
+BRANCO = (255, 255, 255)
+PRETO = (0, 0, 0)
+CINZA = (200, 200, 200)
+AMARELO = (255, 255, 0)
+VERDE = (0, 200, 0)
+VERMELHO = (200, 0, 0)
+AZUL = (100, 100, 255)
+
+FPS = 30
