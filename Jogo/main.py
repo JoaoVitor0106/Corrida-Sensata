@@ -18,8 +18,7 @@ grande = pygame.font.Font(None, 72)
 clock = pygame.time.Clock()
 
 # Carregamento de imagens
-pista_img = carregar_e_escalar("assets/pista.png", (800, 200))
-chegada_img = carregar_e_escalar("assets/chegada.png", (50, 100))
+pista_img = carregar_e_escalar("assets/pista.png", (800, 400))
 nitro_img = carregar_e_escalar("assets/nitro.png", (20, 20))
 
 # Carros
@@ -65,7 +64,7 @@ iniciar_bots()
 
 while jogando:
     clock.tick(FPS)
-    desenhar_fundo(TELA, pista_img, chegada_img, nitro_img, nitro_pego, nitro_pos, carros)
+    desenhar_fundo(TELA, pista_img, nitro_img, nitro_pego, nitro_pos, carros)
 
     if game_state == "running":
         if fase == "pergunta_multipla":

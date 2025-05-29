@@ -1,7 +1,7 @@
 import pygame
 
 LARGURA, ALTURA = 800, 600
-ALTURA_PISTA = 350
+ALTURA_PISTA = 400
 
 BRANCO = (255, 255, 255)
 PRETO = (0, 0, 0)

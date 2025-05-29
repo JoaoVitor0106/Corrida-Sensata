@@ -1,7 +1,7 @@
 import pygame
 
 class Carro(pygame.sprite.Sprite):
-    def __init__(self, imagem, posicao, nome, tamanho=(75, 50)):
+    def __init__(self, imagem, posicao, nome, tamanho=(100, 75)):
         super().__init__()
         self.image = pygame.image.load(imagem).convert_alpha()
         self.image = pygame.transform.scale(self.image, tamanho)

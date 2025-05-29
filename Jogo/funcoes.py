@@ -11,10 +11,9 @@ def carregar_e_escalar(imagem, tamanho):
     img = pygame.image.load(imagem).convert_alpha()
     return pygame.transform.scale(img, tamanho)
 
-def desenhar_fundo(tela, pista_img, chegada_img, nitro_img, nitro_pego, nitro_pos, carros):
+def desenhar_fundo(tela, pista_img, nitro_img, nitro_pego, nitro_pos, carros):
     tela.fill(BRANCO)
     tela.blit(pista_img, (0, 0))
-    tela.blit(chegada_img, (700, 85))
     if not nitro_pego:
         tela.blit(nitro_img, (nitro_pos, 130))
 
