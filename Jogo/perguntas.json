@@ -151,8 +151,36 @@
       "resposta": 3
     }
   ],
-  "descritiva": {
-    "pergunta": "O que causa o fenômeno das marés?",
-    "resposta_certa": "A atração gravitacional da Lua e do Sol sobre a Terra."
-  }
+  "descritiva": [
+    {
+      "id": "so_deadlock_conciso_01",
+      "pergunta": "O que é um 'deadlock' em Sistemas Operacionais? (Conceito principal)",
+      "resposta_certa": "Processos bloqueados mutuamente esperando por recursos retidos por outros."
+    },
+    {
+      "id": "so_threads_conciso_01",
+      "pergunta": "Qual a principal vantagem de usar threads em vez de processos para tarefas concorrentes numa mesma aplicação?",
+      "resposta_certa": "Compartilhamento de memória eficiente e menor custo de criação e comunicação."
+    },
+    {
+      "id": "so_linux_grep_conciso",
+      "pergunta": "Para que serve o comando 'grep' no Linux? (Função primária)",
+      "resposta_certa": "Buscar padrões ou palavras específicas em arquivos de texto."
+    },
+    {
+      "id": "so_kernel_user_mode_conciso",
+      "pergunta": "Por que existe a separação entre 'modo kernel' e 'modo usuário' em um SO?",
+      "resposta_certa": "Para proteger o sistema operacional e o hardware de falhas ou acessos indevidos das aplicações."
+    },
+    {
+      "id": "so_cli_sigla_01",
+      "pergunta": "No contexto de Sistemas Operacionais, qual é o significado da sigla CLI?",
+      "resposta_certa": "Interface de Linha de Comando"
+    },
+    {
+      "id": "so_gui_sigla_01",
+      "pergunta": "No contexto de Sistemas Operacionais, qual é o significado da sigla GUI?",
+      "resposta_certa": "Interface gráfica do usuário"
+    }
+  ]
 }
