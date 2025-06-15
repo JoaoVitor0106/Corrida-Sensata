@@ -4,439 +4,215 @@ import threading
 import time
 import json
 import random
-import unicodedata
-
-# <<< NOVOS IMPORTS para o Gemini >>>
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 
 from constantes import *
-from carro import Carro
+from classes import Carro
 from funcoes import (
     carregar_e_escalar,
     desenhar_fundo,
     render_pergunta,
     obter_pergunta_disponivel,
-    pergunta_descritiva
+    perguntas_multipla,
+    pergunta_descritiva,
+    remover_acentos,
+    quebrar_texto_em_linhas  # <<< GARANTA QUE ESTE IMPORT ESTÁ AQUI
 )
+from menu import tela_de_menu
 
-# --- INICIALIZAÇÃO E CONFIGURAÇÃO DA API GEMINI ---
-# <<< NOVO >>>
-# Carrega as variáveis de ambiente do arquivo .env
-load_dotenv("chave.env")
-
-# Configura a API do Gemini com a chave
+# --- CONFIGURAÇÃO DA API ---
+load_dotenv(dotenv_path="chave.env")
 try:
     api_key = os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        raise ValueError("Chave de API do Gemini não encontrada no arquivo .env")
+    if not api_key: raise ValueError("Chave de API do Gemini não encontrada")
     genai.configure(api_key=api_key)
-    # Cria o modelo uma vez para ser reutilizado
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
     print("INFO: API do Google Gemini configurada com sucesso.")
 except Exception as e:
     print(f"ERRO FATAL: Falha ao configurar a API do Gemini: {e}")
-    # Se a API não puder ser configurada, o jogo não deve continuar com a parte de IA.
-    # Você pode decidir fechar o jogo ou desabilitar a funcionalidade de nitro.
     gemini_model = None
-# --- FIM DA CONFIGURAÇÃO DA API ---
 
+# --- FUNÇÃO PRINCIPAL DO JOGO ---
+def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
+    # Setup inicial do jogo
+    pista_img = carregar_e_escalar("assets/pista.png", (LARGURA, ALTURA_PISTA))
+    obstaculo_img = carregar_e_escalar("assets/obstaculo.png", (40, 40))
+    sound_vitoria = pygame.mixer.Sound('assets/sounds/vitoria.wav')
+    sound_obstaculo = pygame.mixer.Sound('assets/sounds/nitro.wav')
+    carros = [Carro(img, pos, nome) for img, pos, nome in [
+        ("assets/carros/Civic.png", (50, 130), "Jogador"),
+        ("assets/carros/Supra.png", (50, 180), "Bot1"),
+        ("assets/carros/Uno.png", (50, 230), "Bot2"),
+        ("assets/carros/Miata.png", (50, 280), "Bot3")
+    ]]
+    carro_jogador = carros[0]
 
-# Inicialização do Pygame e Display
-pygame.init()
-pygame.mixer.init()
-TELA = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Corrida Sensata")
-fonte = pygame.font.Font(None, 36)
-fonte_input = pygame.font.Font(None, 32)
-grande = pygame.font.Font(None, 72)
-clock = pygame.time.Clock()
+    # Variáveis de estado da partida
+    fase = "pergunta_multipla"
+    vencedor = None
+    semaforo_jogo = threading.Semaphore(1)
+    pergunta_atual = None
+    perguntas_ja_usadas = []
+    retangulos_opcoes_clicaveis_atuais = []
+    
+    obstaculo_pos_x = random.randint(LARGURA // 3, LARGURA - LARGURA // 3)
+    obstaculo_pego = False
+    pergunta_obstaculo_atual = None
+    texto_input_obstaculo = ""
+    verificando_com_ia_agora = False
+    resposta_da_ia_pronta = threading.Event()
+    resultado_da_ia = None
+    
+    bots_congelados = False
+    bots_descongelam_em = 0
 
-# Carregar Assets
-pista_img = carregar_e_escalar("assets/pista.png", (LARGURA, ALTURA_PISTA))
-nitro_img = carregar_e_escalar("assets/nitro.png", (30, 30))
+    def set_vencedor(nome):
+        nonlocal vencedor
+        if vencedor is None: vencedor = nome
 
-# Instanciar Carros
-Carro1 = Carro("assets/carros/Civic.png", (50, 130), "Jogador")
-Carro2 = Carro("assets/carros/Supra.png", (50, 180), "Bot1")
-Carro3 = Carro("assets/carros/Uno.png", (50, 230), "Bot2")
-Carro4 = Carro("assets/carros/Miata.png", (50, 280), "Bot3")
-carros = [Carro1, Carro2, Carro3, Carro4]
-
-# Variáveis Globais para IA e Input do Nitro
-texto_input_nitro = ""
-resposta_da_ia_pronta = threading.Event()
-resultado_da_ia = None
-verificando_com_ia_agora = False
-# NOME_MODELO_OLLAMA foi removido
-
-# Variáveis de Estado do Jogo
-jogando = True
-fase = "pergunta_multipla"
-pergunta_atual = None
-perguntas_ja_usadas = []
-nitro_pos_x = random.randint(LARGURA // 3, LARGURA - LARGURA // 3)
-nitro_pego = False
-game_state = "running"
-vencedor = None
-semaforo_jogo = threading.Semaphore(1)
-
-# UI de Perguntas
-retangulos_opcoes_clicaveis_atuais = []
-indice_opcao_com_hover_atual = None
-
-# --- Funções Auxiliares ---
-def remover_acentos(texto):
-    if texto is None: return ""
-    try:
-        nfkd_form = unicodedata.normalize('NFKD', str(texto))
-        return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
-    except TypeError:
-        return str(texto)
-
-# <<< FUNÇÃO DE IA TOTALMENTE REESCRITA PARA USAR GEMINI >>>
-def chamar_ia_para_verificar(p_original, r_esperada_gabarito, r_jogador):
-    global resultado_da_ia, resposta_da_ia_pronta, verificando_com_ia_agora
-
-    if gemini_model is None:
-        print("ERRO: O modelo Gemini não foi inicializado. Abortando a verificação.")
-        resultado_da_ia = False # Considera a resposta errada se a API não funciona
-        verificando_com_ia_agora = False
-        resposta_da_ia_pronta.set()
-        return
-
-    prompt = f"""Você é um juiz em um jogo de perguntas e respostas. Sua tarefa é avaliar se a resposta de um jogador está correta ou semanticamente muito similar a uma resposta gabarito, considerando a pergunta original.
-
-Pergunta Original: "{p_original}"
-Resposta Esperada (Gabarito): "{r_esperada_gabarito}"
-Resposta do Jogador: "{r_jogador}"
-
-A "Resposta do Jogador" está correta ou é uma variação aceitável da "Resposta Esperada" (por exemplo, contém as palavras-chave mais importantes ou o significado central)?
-Responda APENAS com a palavra "SIM" se estiver correta/aceitável, ou APENAS com a palavra "NAO" se estiver incorreta.
-"""
-    try:
-        print("DEBUG: Enviando para a API do Gemini...")
-        # Configurações de segurança para evitar respostas indesejadas
-        safety_settings = [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-        ]
-        response = gemini_model.generate_content(prompt, safety_settings=safety_settings)
-        resposta_ia_texto = response.text.strip().upper()
-        
-        print(f"DEBUG IA: Resposta crua: '{response.text}', Processada: '{resposta_ia_texto}'")
-
-        if "SIM" in resposta_ia_texto:
-            resultado_da_ia = True
-        elif "NAO" in resposta_ia_texto:
-            resultado_da_ia = False
-        else:
-            print("DEBUG IA: Resposta da IA não conclusiva. Considerando incorreta.")
-            resultado_da_ia = False
-            
-    except Exception as e:
-        print(f"Erro ao chamar a API do Gemini: {e}")
-        resultado_da_ia = False # Assume resposta incorreta em caso de erro
-    finally:
-        print(f"THREAD IA ({threading.get_ident()}): Bloco finally. Setando verificando_com_ia_agora = False.")
-        verificando_com_ia_agora = False
-        resposta_da_ia_pronta.set()
-        print(f"THREAD IA ({threading.get_ident()}): Finalizada.")
-
-
-# --- Lógica dos Bots e Jogo ---
-# (O restante do código permanece o mesmo. Apenas a chamada para a thread de IA será ajustada)
-def bots_movimento(carro_obj):
-    global game_state, vencedor, verificando_com_ia_agora
-    while game_state == "running" and vencedor is None:
-        if verificando_com_ia_agora:
-            try:
+    def bots_movimento(carro_obj, stop_event):
+        while not stop_event.is_set() and vencedor is None:
+            if bots_congelados:
                 time.sleep(0.1)
-            except Exception:
-                break
-            continue
-        try:
-            tempo_pausa = random.uniform(0.15, 0.6)
-            time.sleep(tempo_pausa)
-        except Exception:
-            break
-        if game_state != "running" or vencedor is not None:
-            break
-        if verificando_com_ia_agora:
-            continue
-        distancia_movimento = random.randint(3, 8)
-        carro_obj.mover(distancia_movimento)
-        if carro_obj.rect.x > LARGURA - 100:
-            if semaforo_jogo.acquire(blocking=False):
-                try:
-                    if vencedor is None:
-                        game_over(carro_obj.nome)
-                finally:
-                    semaforo_jogo.release()
-                break
-
-def game_over(vencedor_nome_atual):
-    global game_state, retangulos_opcoes_clicaveis_atuais, vencedor
-    if game_state == "running":
-        print(f"INFO: Evento de fim de jogo para: {vencedor_nome_atual}!")
-        vencedor = vencedor_nome_atual
-        if vencedor_nome_atual == Carro1.nome:
-            game_state = "win"
-        else:
-            game_state = "lose"
-        retangulos_opcoes_clicaveis_atuais = []
-        try:
-            if not pygame.mixer.get_init(): pygame.mixer.init()
-            if game_state == "win":
-                sound_vitoria = pygame.mixer.Sound('assets/sounds/vitoria.wav')
-                sound_vitoria.play()
-        except pygame.error as e:
-            print(f"Erro ao tocar som em game_over: {e}")
-
-def iniciar_bots():
-    for bot_obj in [Carro2, Carro3, Carro4]:
-        thread_bot = threading.Thread(target=bots_movimento, args=(bot_obj,), daemon=True)
-        thread_bot.start()
-
-iniciar_bots()
-
-# === LOOP PRINCIPAL DO JOGO ===
-while jogando:
-    clock.tick(FPS)
-    posicao_mouse_frame_atual = pygame.mouse.get_pos()
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            jogando = False
-            game_state = "quit"
-        elif evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_ESCAPE:
-                jogando = False
-                game_state = "quit"
-            if game_state == "running" and vencedor is None:
-                if fase == "pergunta_nitro":
-                    if evento.key == pygame.K_RETURN:
-                        if texto_input_nitro.strip():
-                            if not verificando_com_ia_agora:
-                                print("INFO: Preparando para enviar resposta para IA...")
-                                verificando_com_ia_agora = True
-                                resposta_da_ia_pronta.clear()
-                                resultado_da_ia = None
-                                if pergunta_descritiva and "pergunta" in pergunta_descritiva and "resposta_certa" in pergunta_descritiva:
-                                    # <<< MODIFICADO: A chamada da thread agora não passa o nome do modelo >>>
-                                    thread_ia = threading.Thread(
-                                        target=chamar_ia_para_verificar,
-                                        args=(
-                                            pergunta_descritiva["pergunta"],
-                                            pergunta_descritiva["resposta_certa"],
-                                            texto_input_nitro,
-                                        ),
-                                        daemon=True
-                                    )
-                                    print(f"MAIN THREAD: Iniciando thread IA...")
-                                    thread_ia.start()
-                                else:
-                                    print("ERRO: Pergunta descritiva não carregada ou chave 'resposta_certa' ausente!")
-                                    fase = "pergunta_multipla"
-                                    nitro_pego = False
-                                    verificando_com_ia_agora = False
-                            else:
-                                print("INFO: IA já está processando uma resposta. Aguarde.")
-                    elif evento.key == pygame.K_BACKSPACE:
-                        if not verificando_com_ia_agora:
-                            texto_input_nitro = texto_input_nitro[:-1]
-                    else:
-                        if not verificando_com_ia_agora:
-                            if len(texto_input_nitro) < 150:
-                                texto_input_nitro += evento.unicode
-                elif fase == "pergunta_multipla" and pergunta_atual:
-                    if evento.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4]:
-                        try:
-                            opcao_pelo_teclado = int(evento.unicode) - 1
-                            if 0 <= opcao_pelo_teclado < len(pergunta_atual["opcoes"]):
-                                if semaforo_jogo.acquire(blocking=False):
-                                    try:
-                                        acertou = (opcao_pelo_teclado == pergunta_atual["resposta"])
-                                        if acertou:
-                                            print("INFO: Resposta múltipla escolha CORRETA!")
-                                            Carro1.mover(MOVE_NORMAL)
-                                        else:
-                                            print("INFO: Resposta múltipla escolha INCORRETA.")
-                                        pergunta_atual = None
-                                        retangulos_opcoes_clicaveis_atuais = []
-                                        if Carro1.rect.x > LARGURA - 100 and game_state == "running" and vencedor is None:
-                                            game_over(Carro1.nome)
-                                    finally:
-                                        semaforo_jogo.release()
-                        except ValueError:
-                            pass
-        elif evento.type == pygame.MOUSEBUTTONDOWN:
-            if evento.button == 1 and game_state == "running" and \
-               fase == "pergunta_multipla" and pergunta_atual and vencedor is None:
-                for i, rect_opcao_clicavel in enumerate(retangulos_opcoes_clicaveis_atuais):
-                    if rect_opcao_clicavel.collidepoint(posicao_mouse_frame_atual):
-                        if semaforo_jogo.acquire(blocking=False):
-                            try:
-                                acertou = (i == pergunta_atual["resposta"])
-                                if acertou:
-                                    print("INFO: Resposta múltipla escolha CORRETA! (mouse)")
-                                    Carro1.mover(MOVE_NORMAL)
-                                else:
-                                    print("INFO: Resposta múltipla escolha INCORRETA. (mouse)")
-                                pergunta_atual = None
-                                retangulos_opcoes_clicaveis_atuais = []
-                                if Carro1.rect.x > LARGURA - 100 and game_state == "running" and vencedor is None:
-                                    game_over(Carro1.nome)
-                            finally:
-                                semaforo_jogo.release()
-                            break
-
-    # --- LÓGICA DO JOGO / ATUALIZAÇÕES DE ESTADO ---
-    # (O código aqui permanece o mesmo)
-    if game_state == "running" and vencedor is None:
-        nitro_y_pos = Carro1.rect.centery - (nitro_img.get_height() // 2)
-        nitro_hitbox = pygame.Rect(nitro_pos_x, nitro_y_pos, nitro_img.get_width(), nitro_img.get_height())
-        if not nitro_pego and Carro1.rect.colliderect(nitro_hitbox):
-            if fase != "pergunta_nitro":
-                print("INFO: Nitro pego!")
-                nitro_pego = True
-                fase = "pergunta_nitro"
-                texto_input_nitro = ""
-                verificando_com_ia_agora = False
-                resposta_da_ia_pronta.clear()
-                resultado_da_ia = None
-                try:
-                    sound_nitro = pygame.mixer.Sound('assets/sounds/nitro.wav')
-                    sound_nitro.play()
-                except pygame.error as e:
-                    print(f"Erro ao tocar som do nitro: {e}")
-        if fase == "pergunta_nitro" and resposta_da_ia_pronta.is_set():
-            if resultado_da_ia is not None:
+                continue
+            time.sleep(random.uniform(0.15, 0.6))
+            if stop_event.is_set() or vencedor is not None: break
+            carro_obj.mover(random.randint(3, 8))
+            if carro_obj.rect.x > LARGURA - 100:
                 if semaforo_jogo.acquire(blocking=False):
                     try:
-                        if resultado_da_ia:
-                            print("✅ Resposta correta (IA)! Nitro ativado.")
-                            Carro1.mover(MOVE_NITRO)
-                            if Carro1.rect.x > LARGURA - 100 and game_state == "running" and vencedor is None:
-                                game_over(Carro1.nome)
-                        else:
-                            print("❌ Resposta incorreta para o nitro (IA) ou erro na IA.")
-                        fase = "pergunta_multipla"
-                        texto_input_nitro = ""
-                    finally:
-                        semaforo_jogo.release()
-                resposta_da_ia_pronta.clear()
-                resultado_da_ia = None
-        if fase == "pergunta_multipla" and not pergunta_atual and not verificando_com_ia_agora:
-            if semaforo_jogo.acquire(blocking=False):
-                try:
-                    if pergunta_atual is None:
-                        nova_pergunta = obter_pergunta_disponivel(perguntas_ja_usadas)
-                        if nova_pergunta:
-                            pergunta_atual = nova_pergunta
-                        else:
-                            if game_state == "running" and vencedor is None:
-                                print("INFO: Todas as perguntas de múltipla escolha respondidas! Você perdeu.")
-                                game_over("Fim das Perguntas")
-                finally:
-                    semaforo_jogo.release()
+                        if vencedor is None: set_vencedor(carro_obj.nome)
+                    finally: semaforo_jogo.release()
 
-    # --- LÓGICA DE DESENHO ---
-    # (O código aqui permanece o mesmo)
-    desenhar_fundo(TELA, pista_img, nitro_img, nitro_pego, nitro_pos_x, carros)
-    indice_opcao_com_hover_atual = None
-    if fase == "pergunta_multipla" and pergunta_atual and game_state == "running":
-        if retangulos_opcoes_clicaveis_atuais:
-            for i_hover, rect_opcao_hover in enumerate(retangulos_opcoes_clicaveis_atuais):
-                if rect_opcao_hover.collidepoint(posicao_mouse_frame_atual):
-                    indice_opcao_com_hover_atual = i_hover
-                    break
-    if game_state == "running":
-        if fase == "pergunta_multipla":
-            if pergunta_atual:
-                retangulos_opcoes_clicaveis_atuais = render_pergunta(
-                    TELA, fonte,
-                    pergunta_atual["pergunta"],
-                    pergunta_atual["opcoes"],
-                    AZUL, PRETO, AMARELO,
-                    indice_opcao_com_hover_atual
-                )
-            else:
-                retangulos_opcoes_clicaveis_atuais = []
-        # CÓDIGO NOVO E CORRIGIDO
-    elif fase == "pergunta_nitro":
-        # Primeiro, verifica se a lista de perguntas descritivas não está vazia
-        if pergunta_descritiva:
-            # Pega a pergunta que foi selecionada quando o nitro foi pego.
-            # Se nenhuma foi selecionada ainda, seleciona uma aleatoriamente.
-            if 'pergunta_nitro_atual' not in locals() or pergunta_nitro_atual is None:
-                pergunta_nitro_atual = random.choice(pergunta_descritiva)
-    
-            y_pos_nitro_q = ALTURA_PISTA + 30
-            texto_q_original = pergunta_nitro_atual["pergunta"]
-            palavras_q = texto_q_original.split(' ')
-            linhas_q_renderizadas = []
-            linha_atual_q = ""
-            max_largura_linha = LARGURA - 60
-            for palavra in palavras_q:
-                palavra_para_adicionar = palavra + " "
-                if fonte.size(linha_atual_q + palavra_para_adicionar)[0] < max_largura_linha:
-                    linha_atual_q += palavra_para_adicionar
-                else:
-                    linhas_q_renderizadas.append(linha_atual_q.strip())
-                    linha_atual_q = palavra_para_adicionar
-            linhas_q_renderizadas.append(linha_atual_q.strip())
-    
-            for i, linha_q in enumerate(linhas_q_renderizadas):
-                texto_q_surf = fonte.render(linha_q, True, AZUL)
-                TELA.blit(texto_q_surf, (TELA.get_width() // 2 - texto_q_surf.get_width() // 2, y_pos_nitro_q + i * (fonte.get_height() + 2)))
-    
-            y_pos_nitro_q += len(linhas_q_renderizadas) * (fonte.get_height() + 2) + 15
-    
-            if verificando_com_ia_agora:
-                msg_espera_surf = fonte.render("Verificando com IA, aguarde...", True, PRETO)
-                TELA.blit(msg_espera_surf, (TELA.get_width() // 2 - msg_espera_surf.get_width() // 2, y_pos_nitro_q))
-            else:
-                input_box_width = LARGURA - 100
-                input_box_rect = pygame.Rect(TELA.get_width() // 2 - input_box_width // 2, y_pos_nitro_q - 5, input_box_width, 40)
-                pygame.draw.rect(TELA, BRANCO, input_box_rect)
-                pygame.draw.rect(TELA, PRETO, input_box_rect, 2)
-                input_render = f"{texto_input_nitro}_"
-                texto_input_surf = fonte_input.render(input_render, True, PRETO)
-                TELA.blit(texto_input_surf, (input_box_rect.x + 10, input_box_rect.y + (input_box_rect.height - texto_input_surf.get_height()) // 2))
-    
-            y_pos_nitro_q += 40 + 20
-            instr_surf = fonte.render("Pressione Enter para enviar.", True, CINZA)
-            TELA.blit(instr_surf, (TELA.get_width() // 2 - instr_surf.get_width() // 2, y_pos_nitro_q))
+    def chamar_ia_para_verificar(p_original, r_esperada_gabarito, r_jogador):
+        nonlocal resultado_da_ia, verificando_com_ia_agora
+        if gemini_model is None: resultado_da_ia = False
         else:
-            # Este bloco de erro agora só será ativado se a lista "descritiva" no JSON estiver vazia
-            fallback_surf = fonte.render("Nitro! Erro: Nenhuma pergunta descritiva encontrada no JSON.", True, VERMELHO)
-            TELA.blit(fallback_surf, (20, ALTURA_PISTA + 20))
-            if semaforo_jogo.acquire(blocking=False):
-                try:
-                    if fase == "pergunta_nitro":
-                        fase = "pergunta_multipla"
-                        nitro_pego = False
-                finally:
-                    semaforo_jogo.release()
+            prompt = f'Você é um juiz em um jogo de perguntas e respostas. Sua tarefa é avaliar se a resposta de um jogador está correta ou semanticamente muito similar a uma resposta gabarito, considerando a pergunta original. Pergunta Original: "{p_original}" Resposta Esperada (Gabarito): "{r_esperada_gabarito}" Resposta do Jogador: "{r_jogador}" A "Resposta do Jogador" está correta ou é uma variação aceitável da "Resposta Esperada"? Responda APENAS com a palavra "SIM" se estiver correta/aceitável, ou APENAS com a palavra "NAO" se estiver incorreta.'
+            try:
+                safety_settings = [{"category": c, "threshold": "BLOCK_NONE"} for c in ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"]]
+                response = gemini_model.generate_content(prompt, safety_settings=safety_settings)
+                resultado_da_ia = "SIM" in response.text.strip().upper()
+            except Exception as e:
+                print(f"Erro ao chamar a API: {e}"); resultado_da_ia = False
+        verificando_com_ia_agora = False
+        resposta_da_ia_pronta.set()
+
+    stop_bots_event = threading.Event()
+    for bot in carros[1:]: threading.Thread(target=bots_movimento, args=(bot, stop_bots_event), daemon=True).start()
+
+    game_running = True
+    while game_running:
+        clock.tick(FPS)
+        posicao_mouse_frame_atual = pygame.mouse.get_pos()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT or (evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE): game_running = False
+            if vencedor is None:
+                if evento.type == pygame.KEYDOWN and fase == "pergunta_obstaculo" and not verificando_com_ia_agora:
+                    if evento.key == pygame.K_RETURN and texto_input_obstaculo.strip() and pergunta_obstaculo_atual:
+                        verificando_com_ia_agora = True; resposta_da_ia_pronta.clear()
+                        threading.Thread(target=chamar_ia_para_verificar, args=(pergunta_obstaculo_atual["pergunta"], pergunta_obstaculo_atual["resposta_certa"], texto_input_obstaculo), daemon=True).start()
+                    elif evento.key == pygame.K_BACKSPACE: texto_input_obstaculo = texto_input_obstaculo[:-1]
+                    elif len(texto_input_obstaculo) < 150: texto_input_obstaculo += evento.unicode
                 
-    elif game_state == "win" or game_state == "lose":
-        cor_texto_final = VERMELHO
-        if game_state == "win":
-            msg_texto = "Você venceu!"
-            cor_texto_final = VERDE
+                if fase == "pergunta_multipla" and pergunta_atual:
+                    escolha = -1
+                    if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                        for i, rect in enumerate(retangulos_opcoes_clicaveis_atuais):
+                            if rect.collidepoint(posicao_mouse_frame_atual): escolha = i; break
+                    elif evento.type == pygame.KEYDOWN and evento.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4]:
+                        try: escolha = int(evento.unicode) - 1
+                        except (ValueError, IndexError): pass
+                    if escolha != -1 and 0 <= escolha < len(pergunta_atual["opcoes"]):
+                        if (escolha == pergunta_atual["resposta"]): carro_jogador.mover(MOVE_NORMAL)
+                        pergunta_atual = None
+                        if carro_jogador.rect.x > LARGURA - 100: set_vencedor(carro_jogador.nome)
+        
+        if vencedor is None:
+            obstaculo_hitbox = pygame.Rect(obstaculo_pos_x, carro_jogador.rect.centery - 15, 40, 40)
+            if not obstaculo_pego and carro_jogador.rect.colliderect(obstaculo_hitbox):
+                obstaculo_pego = True; fase = "pergunta_obstaculo"; texto_input_obstaculo = ""
+                if pergunta_descritiva: pergunta_obstaculo_atual = random.choice(pergunta_descritiva)
+                else: pergunta_obstaculo_atual = None
+                try: sound_obstaculo.play()
+                except pygame.error: pass
+
+            if fase == "pergunta_obstaculo" and resposta_da_ia_pronta.is_set():
+                if resultado_da_ia: bots_congelados = True; bots_descongelam_em = time.time() + DURACAO_CONGELAMENTO
+                fase = "pergunta_multipla"; obstaculo_pego = False; obstaculo_pos_x = random.randint(LARGURA//3, LARGURA-LARGURA//3); pergunta_obstaculo_atual = None; resposta_da_ia_pronta.clear()
+
+            if bots_congelados and time.time() > bots_descongelam_em: bots_congelados = False
+            if fase == "pergunta_multipla" and not pergunta_atual:
+                pergunta_atual = obter_pergunta_disponivel(perguntas_multipla, perguntas_ja_usadas)
+                if not pergunta_atual: set_vencedor("Fim das Perguntas")
         else:
-            if vencedor == "Fim das Perguntas":
-                msg_texto = "Você perdeu! Perguntas esgotadas."
-            elif vencedor and vencedor != Carro1.nome:
-                msg_texto = f"{vencedor} venceu!"
-            else:
-                msg_texto = "Você perdeu!"
-        texto_final_surf = grande.render(msg_texto, True, cor_texto_final)
-        TELA.blit(texto_final_surf, (LARGURA//2 - texto_final_surf.get_width()//2, ALTURA_PISTA + 70))
+            if 'fim_timer' not in locals():
+                fim_timer = time.time() + 5
+                if vencedor == carro_jogador.nome:
+                    try: sound_vitoria.play()
+                    except pygame.error: pass
+            if time.time() > fim_timer: game_running = False
 
-    pygame.display.flip()
+        desenhar_fundo(TELA, pista_img, obstaculo_img, obstaculo_pego, obstaculo_pos_x, carros)
+        if vencedor is None:
+            if fase == "pergunta_multipla" and pergunta_atual:
+                indice_hover = -1
+                for i, rect in enumerate(retangulos_opcoes_clicaveis_atuais):
+                    if rect.collidepoint(posicao_mouse_frame_atual): indice_hover = i; break
+                retangulos_opcoes_clicaveis_atuais = render_pergunta(TELA, fonte, pergunta_atual["pergunta"], pergunta_atual["opcoes"], AZUL, PRETO, AMARELO, indice_hover)
+            elif fase == "pergunta_obstaculo" and pergunta_obstaculo_atual:
+                y_pos_q = ALTURA_PISTA + 20
+                linhas = quebrar_texto_em_linhas(pergunta_obstaculo_atual["pergunta"], LARGURA - 40, fonte)
+                for linha in linhas:
+                    texto_surf = fonte.render(linha, True, AZUL)
+                    TELA.blit(texto_surf, (20, y_pos_q)); y_pos_q += fonte.get_height()
+                y_pos_input = y_pos_q + 10
+                if verificando_com_ia_agora:
+                    msg_espera_surf = fonte.render("Verificando com IA...", True, PRETO)
+                    TELA.blit(msg_espera_surf, (20, y_pos_input))
+                else:
+                    input_box_rect = pygame.Rect(20, y_pos_input, LARGURA - 40, 40)
+                    pygame.draw.rect(TELA, BRANCO, input_box_rect); pygame.draw.rect(TELA, PRETO, input_box_rect, 2)
+                    texto_input_surf = fonte_input.render(f"{texto_input_obstaculo}_", True, PRETO)
+                    TELA.blit(texto_input_surf, (input_box_rect.x + 10, input_box_rect.y + 5))
+        else:
+            msg = "Você venceu!" if vencedor == carro_jogador.nome else f"{vencedor} venceu!"
+            if vencedor == "Fim das Perguntas": msg = "Perguntas esgotadas!"
+            cor = VERDE if vencedor == carro_jogador.nome else VERMELHO
+            texto_final_surf = grande.render(msg, True, cor)
+            TELA.blit(texto_final_surf, texto_final_surf.get_rect(center=(LARGURA / 2, ALTURA_PISTA + (ALTURA - ALTURA_PISTA) / 2)))
 
-pygame.quit()
+        pygame.display.flip()
+
+    stop_bots_event.set()
+    return "menu"
+
+def main():
+    """Função principal que gerencia os estados do jogo (menu, jogando)."""
+    pygame.init()
+    pygame.display.set_caption("Corrida Sensata")
+    TELA = pygame.display.set_mode((LARGURA, ALTURA))
+    fonte_titulo = pygame.font.Font(None, 80)
+    fonte_botao = pygame.font.Font(None, 50)
+    fonte_jogo = pygame.font.Font(None, 36)
+    fonte_input_jogo = pygame.font.Font(None, 32)
+    grande_jogo = pygame.font.Font(None, 72)
+    clock = pygame.time.Clock()
+    estado_atual = "menu"
+
+    while True:
+        if estado_atual == "menu":
+            estado_atual = tela_de_menu(TELA, fonte_titulo, fonte_botao)
+        elif estado_atual == "JOGANDO":
+            estado_atual = rodar_jogo(TELA, fonte_jogo, fonte_input_jogo, grande_jogo, clock)
+        elif estado_atual == "SAIR":
+            break
+    
+    pygame.quit()
+    print("Jogo encerrado.")
+
+if __name__ == '__main__':
+    main()
