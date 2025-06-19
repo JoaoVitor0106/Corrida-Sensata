@@ -3,10 +3,9 @@ import pygame
 
 LARGURA, ALTURA = 800, 600
 ALTURA_PISTA = 400
-DURACAO_CONGELAMENTO = 5
 
-MOVE_NORMAL = 30
-MOVE_NITRO = 70
+DURACAO_CONGELAMENTO = 5 #duração em segundos
+MOVE_NORMAL = 30 #salto do carrinho do jogador
 
 BRANCO = (255, 255, 255)
 PRETO = (0, 0, 0)

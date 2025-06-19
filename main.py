@@ -48,9 +48,9 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     sound_obstaculo = pygame.mixer.Sound('assets/sounds/nitro.wav')
 
     carros = [Carro(img, pos, nome) for img, pos, nome in [
-        ("assets/carros/MR2.png", (50, 130), "Jogador"),
+        ("assets/carros/Uno.png", (50, 130), "Jogador"),
         ("assets/carros/Supra.png", (50, 180), "Bot1"),
-        ("assets/carros/Uno.png", (50, 230), "Bot2"),
+        ("assets/carros/MR2.png", (50, 230), "Bot2"),
         ("assets/carros/Miata.png", (50, 280), "Bot3")
     ]]
     carro_jogador = carros[0]

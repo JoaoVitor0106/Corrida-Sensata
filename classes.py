@@ -76,7 +76,6 @@ class Botao:
             self.clicado = False
 
         # 4. Desenha o botão
-        # Desenha o retângulo de fundo com bordas arredondadas
         pygame.draw.rect(tela, cor_atual, self.rect, border_radius=10)
         
         # Centraliza e desenha o texto sobre o retângulo
