@@ -2,7 +2,7 @@
 import pygame
 import json
 import random
-import unicodedata # <<< Adicionado para a nova função
+import unicodedata
 from constantes import *
 
 
@@ -54,7 +54,6 @@ def obter_pergunta_disponivel(perguntas_multipla, perguntas_ja_usadas):
             perguntas_ja_usadas.append(pergunta_escolhida["id"])
         return pergunta_escolhida
     return None
-
 # Carregamento do JSON
 try:
     with open("perguntas.json", encoding="utf-8") as f:
@@ -67,7 +66,7 @@ except (FileNotFoundError, json.JSONDecodeError) as e:
     pergunta_descritiva = []
 
 
-# <<< ADICIONADO: Função utilitária para remover acentos >>>
+#Função utilitária para remover acentos
 def remover_acentos(texto):
     if texto is None: return ""
     try:
@@ -87,16 +86,13 @@ def quebrar_texto_em_linhas(texto, largura_maxima, fonte):
     linha_atual = ""
 
     for palavra in palavras:
-        # Verifica a largura da linha atual + a próxima palavra
         linha_teste = linha_atual + palavra + " "
         if fonte.size(linha_teste)[0] <= largura_maxima:
             linha_atual = linha_teste
         else:
-            # Finaliza a linha atual e começa uma nova
             linhas_finais.append(linha_atual.strip())
             linha_atual = palavra + " "
     
-    # Adiciona a última linha que sobrou
     linhas_finais.append(linha_atual.strip())
 
     return linhas_finais
