@@ -153,32 +153,32 @@
   ],
   "descritiva": [
     {
-      "id": "so_deadlock_conciso_01",
+      "id": "01",
       "pergunta": "O que é um 'deadlock' em Sistemas Operacionais? (Conceito principal)",
       "resposta_certa": "Processos bloqueados mutuamente esperando por recursos retidos por outros."
     },
     {
-      "id": "so_threads_conciso_01",
+      "id": "02",
       "pergunta": "Qual a principal vantagem de usar threads em vez de processos para tarefas concorrentes numa mesma aplicação?",
       "resposta_certa": "Compartilhamento de memória eficiente e menor custo de criação e comunicação."
     },
     {
-      "id": "so_linux_grep_conciso",
+      "id": "03",
       "pergunta": "Para que serve o comando 'grep' no Linux? (Função primária)",
       "resposta_certa": "Buscar padrões ou palavras específicas em arquivos de texto."
     },
     {
-      "id": "so_kernel_user_mode_conciso",
+      "id": "04",
       "pergunta": "Por que existe a separação entre 'modo kernel' e 'modo usuário' em um SO?",
       "resposta_certa": "Para proteger o sistema operacional e o hardware de falhas ou acessos indevidos das aplicações."
     },
     {
-      "id": "so_cli_sigla_01",
+      "id": "04",
       "pergunta": "No contexto de Sistemas Operacionais, qual é o significado da sigla CLI?",
       "resposta_certa": "Interface de Linha de Comando"
     },
     {
-      "id": "so_gui_sigla_01",
+      "id": "06",
       "pergunta": "No contexto de Sistemas Operacionais, qual é o significado da sigla GUI?",
       "resposta_certa": "Interface gráfica do usuário"
     }
