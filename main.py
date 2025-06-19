@@ -1,3 +1,4 @@
+# main.py
 import pygame
 import threading
 import time
@@ -5,6 +6,7 @@ import random
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+import sys # Adicione esta importação para sys._MEIPASS
 
 # --- Módulos do jogo ---
 from constantes import *
@@ -16,7 +18,8 @@ from funcoes import (
     obter_pergunta_disponivel,
     perguntas_multipla,
     pergunta_descritiva,
-    quebrar_texto_em_linhas
+    quebrar_texto_em_linhas,
+    resource_path # Certifique-se de que resource_path está importado
 )
 from menu import tela_de_menu
 
@@ -36,21 +39,22 @@ except Exception as e:
 def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     # --- Carregamento de mídia ---
     try:
-        pygame.mixer.music.load('assets/sounds/FundoSo.mp3')
+        # Use resource_path para carregar o som
+        pygame.mixer.music.load(resource_path('assets/sounds/FundoSo.mp3'))
         pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(-1)
     except pygame.error:
         pass
 
-    pista_img = carregar_e_escalar("assets/pista.png", (LARGURA, ALTURA_PISTA))
-    obstaculo_img = carregar_e_escalar("assets/gelo.png", (40, 40))
-    sound_vitoria = pygame.mixer.Sound('assets/sounds/vitoria.wav')
-    sound_obstaculo = pygame.mixer.Sound('assets/sounds/nitro.wav')
+    pista_img = carregar_e_escalar(resource_path("assets/pista.png"), (LARGURA, ALTURA_PISTA))
+    obstaculo_img = carregar_e_escalar(resource_path("assets/gelo.png"), (40, 40))
+    sound_vitoria = pygame.mixer.Sound(resource_path('assets/sounds/vitoria.wav'))
+    sound_obstaculo = pygame.mixer.Sound(resource_path('assets/sounds/nitro.wav'))
 
-    carros = [Carro(img, pos, nome) for img, pos, nome in [
-        ("assets/carros/Uno.png", (50, 130), "Jogador"),
+    carros = [Carro(resource_path(img), pos, nome) for img, pos, nome in [
+        ("assets/carros/MR2.png", (50, 130), "Jogador"),
         ("assets/carros/Supra.png", (50, 180), "Bot1"),
-        ("assets/carros/MR2.png", (50, 230), "Bot2"),
+        ("assets/carros/Uno.png", (50, 230), "Bot2"),
         ("assets/carros/Miata.png", (50, 280), "Bot3")
     ]]
     carro_jogador = carros[0]
@@ -63,8 +67,37 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     perguntas_ja_usadas = []
     retangulos_opcoes_clicaveis_atuais = []
 
-    obstaculo_pos_x = random.randint(LARGURA // 3, LARGURA - LARGURA // 3)
-    obstaculo_pego = False
+    # NOVO: Gerenciamento de múltiplos obstáculos
+    obstaculos_ativos = []
+    NUM_OBSTACULOS_POR_RODADA = 3
+    MIN_DISTANCIA_ENTRE_OBSTACULOS = 150 # Distância mínima entre obstáculos
+
+    def gerar_obstaculos_iniciais():
+        nonlocal obstaculos_ativos
+        obstaculos_ativos.clear() # Limpa obstáculos anteriores
+        posicoes_x_geradas = set() # Para garantir distâncias mínimas
+
+        for _ in range(NUM_OBSTACULOS_POR_RODADA):
+            pos_valida = False
+            nova_pos_x = 0
+            tentativas = 0
+            while not pos_valida and tentativas < 100: # Limita tentativas para evitar loop infinito
+                nova_pos_x = random.randint(LARGURA // 3, LARGURA - 100)
+                pos_valida = True
+                for p_existente in posicoes_x_geradas:
+                    if abs(nova_pos_x - p_existente) < MIN_DISTANCIA_ENTRE_OBSTACULOS:
+                        pos_valida = False
+                        break
+                tentativas += 1
+            
+            if pos_valida:
+                obstaculos_ativos.append({"pos_x": nova_pos_x, "ativo": True})
+                posicoes_x_geradas.add(nova_pos_x)
+            else:
+                print("Aviso: Não foi possível gerar um obstáculo com distância suficiente após muitas tentativas.")
+
+    gerar_obstaculos_iniciais() # Chama a função para gerar no início
+
     pergunta_obstaculo_atual = None
     texto_input_obstaculo = ""
     verificando_com_ia_agora = False
@@ -175,9 +208,17 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                             set_vencedor(carro_jogador.nome)
 
         if vencedor is None:
-            obstaculo_hitbox = pygame.Rect(obstaculo_pos_x, carro_jogador.rect.centery - 15, 40, 40)
-            if not obstaculo_pego and carro_jogador.rect.colliderect(obstaculo_hitbox):
-                obstaculo_pego = True
+            # Lógica de colisão para múltiplos obstáculos
+            obstaculo_colidido = None
+            for obstaculo in obstaculos_ativos:
+                if obstaculo["ativo"]:
+                    obstaculo_hitbox = pygame.Rect(obstaculo["pos_x"], carro_jogador.rect.centery - 15, 40, 40)
+                    if carro_jogador.rect.colliderect(obstaculo_hitbox):
+                        obstaculo_colidido = obstaculo
+                        break
+
+            if obstaculo_colidido and fase != "pergunta_obstaculo": # Garante que não entre novamente na fase da pergunta se já estiver lá
+                obstaculo_colidido["ativo"] = False # Marca o obstáculo como pego, mas não o remove da lista
                 fase = "pergunta_obstaculo"
                 texto_input_obstaculo = ""
                 pergunta_obstaculo_atual = random.choice(pergunta_descritiva) if pergunta_descritiva else None
@@ -191,8 +232,8 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                     bots_congelados = True
                     bots_descongelam_em = time.time() + DURACAO_CONGELAMENTO
                 fase = "pergunta_multipla"
-                obstaculo_pego = False
-                obstaculo_pos_x = random.randint(LARGURA // 3, LARGURA - LARGURA // 3)
+                # Não é necessário resetar obstaculo_pego, pois agora usamos obstaculos_ativos[i]["ativo"]
+                # obstaculo_pos_x = random.randint(LARGURA // 3, LARGURA - LARGURA // 3) # Não respawna, então removemos
                 pergunta_obstaculo_atual = None
                 resposta_da_ia_pronta.clear()
 
@@ -215,7 +256,8 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                 game_running = False
 
         # --- Renderização da tela ---
-        desenhar_fundo(TELA, pista_img, obstaculo_img, obstaculo_pego, obstaculo_pos_x, carros)
+        # A função desenhar_fundo precisa ser atualizada para iterar sobre obstaculos_ativos
+        desenhar_fundo(TELA, pista_img, obstaculo_img, obstaculos_ativos, carros) # Modificado aqui
 
         if vencedor is None:
             if fase == "pergunta_multipla" and pergunta_atual:

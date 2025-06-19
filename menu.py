@@ -2,11 +2,12 @@
 import pygame
 from classes import Botao
 from constantes import LARGURA, ALTURA, PRETO, CINZA_ESCURO
+from funcoes import resource_path # Importe a nova função
 
 def tela_de_menu(tela, fonte_titulo, fonte_botao):
     # Carrega e ajusta a imagem de fundo do menu
     try:
-        fundo_menu_img = pygame.image.load("assets/menu.png").convert()
+        fundo_menu_img = pygame.image.load(resource_path("assets/menu.png")).convert()
         fundo_menu_img = pygame.transform.scale(fundo_menu_img, (LARGURA, ALTURA))
     except pygame.error:
         # Caso a imagem não seja encontrada, usa uma cor sólida

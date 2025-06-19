@@ -3,19 +3,42 @@ import pygame
 import json
 import random
 import unicodedata
+import os # Novo
+import sys # Novo
 from constantes import *
 
 
+# NOVO: Função resource_path
+def resource_path(relative_path):
+    """
+    Retorna o caminho absoluto para o recurso,
+    adequado para PyInstaller.
+    """
+    try:
+        # PyInstaller cria um diretório temp e armazena o caminho em _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        # Caminho padrão quando não empacotado pelo PyInstaller
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 def carregar_e_escalar(imagem, tamanho):
-    img = pygame.image.load(imagem).convert_alpha()
+    # ATUALIZADO: Usar resource_path aqui
+    img = pygame.image.load(resource_path(imagem)).convert_alpha()
     return pygame.transform.scale(img, tamanho)
 
 
-def desenhar_fundo(tela, pista_img, obstaculo_img, obstaculo_pego, obstaculo_pos_x, carros):
+# ATUALIZADO: desenhar_fundo agora recebe a lista de obstaculos_ativos
+def desenhar_fundo(tela, pista_img, obstaculo_img, obstaculos_ativos, carros):
     tela.fill(BRANCO)
     tela.blit(pista_img, (0, 0))
-    if not obstaculo_pego:
-        tela.blit(obstaculo_img, (obstaculo_pos_x, 130))
+    
+    # Desenha apenas os obstáculos que estão ativos
+    for obstaculo in obstaculos_ativos:
+        if obstaculo["ativo"]:
+            tela.blit(obstaculo_img, (obstaculo["pos_x"], 130))
 
     for carro in carros:
         carro.draw(tela)
@@ -54,9 +77,10 @@ def obter_pergunta_disponivel(perguntas_multipla, perguntas_ja_usadas):
             perguntas_ja_usadas.append(pergunta_escolhida["id"])
         return pergunta_escolhida
     return None
-# Carregamento do JSON
+
+# Carregamento do JSON (ATUALIZADO PARA USAR resource_path)
 try:
-    with open("perguntas.json", encoding="utf-8") as f:
+    with open(resource_path("perguntas.json"), encoding="utf-8") as f:
         dados = json.load(f)
         perguntas_multipla = dados.get("multipla_escolha", [])
         pergunta_descritiva = dados.get("descritiva", [])
@@ -66,7 +90,6 @@ except (FileNotFoundError, json.JSONDecodeError) as e:
     pergunta_descritiva = []
 
 
-#Função utilitária para remover acentos
 def remover_acentos(texto):
     if texto is None: return ""
     try:
