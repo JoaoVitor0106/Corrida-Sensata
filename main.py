@@ -52,10 +52,10 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
 
     # Cria os carros (jogador e bots)
     carros = [Carro(resource_path(img), pos, nome) for img, pos, nome in [
-        ("assets/carros/MR2.png", (50, 130), "Jogador"),
-        ("assets/carros/Supra.png", (50, 180), "Bot1"),
-        ("assets/carros/Uno.png", (50, 230), "Bot2"),
-        ("assets/carros/Miata.png", (50, 280), "Bot3")
+        ("assets/carros/carro_jogador.png", (50, 130), "Jogador"),
+        ("assets/carros/carro1.png", (50, 180), "Bot1"),
+        ("assets/carros/carro2.png", (50, 230), "Bot2"),
+        ("assets/carros/carro3.png", (50, 280), "Bot3")
     ]]
     carro_jogador = carros[0]
 
@@ -65,6 +65,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     semaforo_jogo = threading.Semaphore(1)
     pergunta_atual = None
     perguntas_ja_usadas = []
+    perguntas_descritivas_ja_usadas = []
     retangulos_opcoes_clicaveis_atuais = []
 
     # Gerenciamento de obstáculos (vários por rodada)
@@ -115,7 +116,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
             time.sleep(random.uniform(0.15, 0.6))
             if stop_event.is_set() or vencedor is not None:
                 break
-            carro_bot.mover(random.randint(2, 5))
+            carro_bot.mover(random.randint(1, 8))
             if carro_bot.rect.x > LARGURA - 100:
                 if semaforo_jogo.acquire(blocking=False):
                     try:
@@ -216,7 +217,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                 obstaculo_colidido["ativo"] = False
                 fase = "pergunta_obstaculo"
                 texto_input_obstaculo = ""
-                pergunta_obstaculo_atual = random.choice(pergunta_descritiva) if pergunta_descritiva else None
+                pergunta_obstaculo_atual = obter_pergunta_disponivel(pergunta_descritiva, perguntas_descritivas_ja_usadas) if pergunta_descritiva else None
                 try:
                     sound_obstaculo.play()
                 except pygame.error:
