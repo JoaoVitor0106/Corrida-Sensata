@@ -1,41 +1,29 @@
-# funcoes.py
 import pygame
 import json
 import random
 import unicodedata
-import os # Novo
-import sys # Novo
+import os
+import sys
 from constantes import *
 
-
-# NOVO: Função resource_path
+# Garante que o jogo funcione mesmo quando for empacotado com PyInstaller
 def resource_path(relative_path):
-    """
-    Retorna o caminho absoluto para o recurso,
-    adequado para PyInstaller.
-    """
     try:
-        # PyInstaller cria um diretório temp e armazena o caminho em _MEIPASS
-        base_path = sys._MEIPASS
+        base_path = sys._MEIPASS  # Usado por PyInstaller
     except Exception:
-        # Caminho padrão quando não empacotado pelo PyInstaller
-        base_path = os.path.abspath(".")
-
+        base_path = os.path.abspath(".")  # Caminho padrão
     return os.path.join(base_path, relative_path)
 
-
+# Carrega e redimensiona uma imagem
 def carregar_e_escalar(imagem, tamanho):
-    # ATUALIZADO: Usar resource_path aqui
     img = pygame.image.load(resource_path(imagem)).convert_alpha()
     return pygame.transform.scale(img, tamanho)
 
-
-# ATUALIZADO: desenhar_fundo agora recebe a lista de obstaculos_ativos
+# Desenha fundo da pista, obstáculos e os carros
 def desenhar_fundo(tela, pista_img, obstaculo_img, obstaculos_ativos, carros):
     tela.fill(BRANCO)
     tela.blit(pista_img, (0, 0))
     
-    # Desenha apenas os obstáculos que estão ativos
     for obstaculo in obstaculos_ativos:
         if obstaculo["ativo"]:
             tela.blit(obstaculo_img, (obstaculo["pos_x"], 130))
@@ -46,7 +34,7 @@ def desenhar_fundo(tela, pista_img, obstaculo_img, obstaculos_ativos, carros):
     pygame.draw.rect(tela, CINZA, (0, ALTURA_PISTA, LARGURA, ALTURA - ALTURA_PISTA))
     pygame.draw.rect(tela, PRETO, (0, ALTURA_PISTA, LARGURA, ALTURA - ALTURA_PISTA), 3)
 
-
+# Exibe uma pergunta de múltipla escolha e destaca a opção com hover
 def render_pergunta(tela, fonte, texto_da_pergunta, lista_de_opcoes,
                     cor_texto_pergunta, cor_opcao_normal, cor_opcao_hover,
                     indice_opcao_com_hover):
@@ -68,7 +56,7 @@ def render_pergunta(tela, fonte, texto_da_pergunta, lista_de_opcoes,
 
     return retangulos_das_opcoes_desenhadas
 
-
+# Escolhe uma pergunta ainda não usada
 def obter_pergunta_disponivel(perguntas_multipla, perguntas_ja_usadas):
     disponiveis = [p for p in perguntas_multipla if p.get("id") not in perguntas_ja_usadas]
     if disponiveis:
@@ -78,7 +66,7 @@ def obter_pergunta_disponivel(perguntas_multipla, perguntas_ja_usadas):
         return pergunta_escolhida
     return None
 
-# Carregamento do JSON (ATUALIZADO PARA USAR resource_path)
+# Carrega perguntas do JSON
 try:
     with open(resource_path("perguntas.json"), encoding="utf-8") as f:
         dados = json.load(f)
@@ -89,7 +77,7 @@ except (FileNotFoundError, json.JSONDecodeError) as e:
     perguntas_multipla = []
     pergunta_descritiva = []
 
-
+# Remove acentos de um texto
 def remover_acentos(texto):
     if texto is None: return ""
     try:
@@ -98,12 +86,8 @@ def remover_acentos(texto):
     except TypeError:
         return str(texto)
 
-
+# Quebra um texto longo em várias linhas, sem ultrapassar o limite de largura
 def quebrar_texto_em_linhas(texto, largura_maxima, fonte):
-    """
-    Quebra uma string de texto longa em uma lista de strings (linhas)
-    que não excedem a largura_maxima quando renderizadas com a fonte dada.
-    """
     linhas_finais = []
     palavras = texto.split(' ')
     linha_atual = ""

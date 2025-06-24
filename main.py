@@ -1,4 +1,3 @@
-# main.py
 import pygame
 import threading
 import time
@@ -6,9 +5,9 @@ import random
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
-import sys # Adicione esta importação para sys._MEIPASS
+import sys
 
-# --- Módulos do jogo ---
+# Importação dos módulos do jogo
 from constantes import *
 from classes import Carro
 from funcoes import (
@@ -19,11 +18,11 @@ from funcoes import (
     perguntas_multipla,
     pergunta_descritiva,
     quebrar_texto_em_linhas,
-    resource_path # Certifique-se de que resource_path está importado
+    resource_path
 )
 from menu import tela_de_menu
 
-# --- Configuração da API do Gemini ---
+# Configura a API do Gemini com a chave do arquivo .env
 load_dotenv(dotenv_path="chave.env")
 try:
     api_key = os.getenv('GEMINI_API_KEY')
@@ -31,26 +30,27 @@ try:
         raise ValueError("Chave de API do Gemini não encontrada")
     genai.configure(api_key=api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-    print("INFO: API do Google Gemini configurada com sucesso.")
+    print("API do Google Gemini configurada com sucesso.")
 except Exception as e:
-    print(f"ERRO FATAL: Falha ao configurar a API do Gemini: {e}")
+    print(f"Erro ao configurar a API do Gemini: {e}")
     gemini_model = None
 
 def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
-    # --- Carregamento de mídia ---
+    # Carrega áudio de fundo
     try:
-        # Use resource_path para carregar o som
         pygame.mixer.music.load(resource_path('assets/sounds/FundoSo.mp3'))
         pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(-1)
     except pygame.error:
         pass
 
+    # Carrega imagens e sons
     pista_img = carregar_e_escalar(resource_path("assets/pista.png"), (LARGURA, ALTURA_PISTA))
     obstaculo_img = carregar_e_escalar(resource_path("assets/gelo.png"), (40, 40))
     sound_vitoria = pygame.mixer.Sound(resource_path('assets/sounds/vitoria.wav'))
     sound_obstaculo = pygame.mixer.Sound(resource_path('assets/sounds/nitro.wav'))
 
+    # Cria os carros (jogador e bots)
     carros = [Carro(resource_path(img), pos, nome) for img, pos, nome in [
         ("assets/carros/MR2.png", (50, 130), "Jogador"),
         ("assets/carros/Supra.png", (50, 180), "Bot1"),
@@ -59,7 +59,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     ]]
     carro_jogador = carros[0]
 
-    # --- Variáveis de jogo ---
+    # Variáveis do jogo
     fase = "pergunta_multipla"
     vencedor = None
     semaforo_jogo = threading.Semaphore(1)
@@ -67,36 +67,31 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     perguntas_ja_usadas = []
     retangulos_opcoes_clicaveis_atuais = []
 
-    # NOVO: Gerenciamento de múltiplos obstáculos
+    # Gerenciamento de obstáculos (vários por rodada)
     obstaculos_ativos = []
     NUM_OBSTACULOS_POR_RODADA = 3
-    MIN_DISTANCIA_ENTRE_OBSTACULOS = 150 # Distância mínima entre obstáculos
+    MIN_DISTANCIA_ENTRE_OBSTACULOS = 150
 
+    # Gera obstáculos com distância mínima entre eles
     def gerar_obstaculos_iniciais():
         nonlocal obstaculos_ativos
-        obstaculos_ativos.clear() # Limpa obstáculos anteriores
-        posicoes_x_geradas = set() # Para garantir distâncias mínimas
+        obstaculos_ativos.clear()
+        posicoes_x_geradas = set()
 
         for _ in range(NUM_OBSTACULOS_POR_RODADA):
             pos_valida = False
             nova_pos_x = 0
             tentativas = 0
-            while not pos_valida and tentativas < 100: # Limita tentativas para evitar loop infinito
+            while not pos_valida and tentativas < 100:
                 nova_pos_x = random.randint(LARGURA // 3, LARGURA - 100)
-                pos_valida = True
-                for p_existente in posicoes_x_geradas:
-                    if abs(nova_pos_x - p_existente) < MIN_DISTANCIA_ENTRE_OBSTACULOS:
-                        pos_valida = False
-                        break
+                pos_valida = all(abs(nova_pos_x - p) >= MIN_DISTANCIA_ENTRE_OBSTACULOS for p in posicoes_x_geradas)
                 tentativas += 1
             
             if pos_valida:
                 obstaculos_ativos.append({"pos_x": nova_pos_x, "ativo": True})
                 posicoes_x_geradas.add(nova_pos_x)
-            else:
-                print("Aviso: Não foi possível gerar um obstáculo com distância suficiente após muitas tentativas.")
 
-    gerar_obstaculos_iniciais() # Chama a função para gerar no início
+    gerar_obstaculos_iniciais()
 
     pergunta_obstaculo_atual = None
     texto_input_obstaculo = ""
@@ -111,8 +106,8 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
         if vencedor is None:
             vencedor = nome
 
+    # Movimento dos bots controlados por thread
     def bots_movimento(carro_bot, stop_event):
-        """Move bots até o final da pista, pausando se congelados."""
         while not stop_event.is_set() and vencedor is None:
             if bots_congelados:
                 time.sleep(0.1)
@@ -129,21 +124,19 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                     finally:
                         semaforo_jogo.release()
 
+    # Envia resposta descritiva para a IA avaliar
     def chamar_ia_para_verificar(pergunta_original, resposta_esperada, resposta_jogador):
-        """Usa IA para avaliar resposta do jogador."""
         nonlocal resultado_da_ia, verificando_com_ia_agora
         if gemini_model is None:
             resultado_da_ia = False
         else:
             prompt = (
-                "Você é um juiz em um jogo de perguntas e respostas. "
-                "Sua tarefa é avaliar se a resposta de um jogador está correta "
-                "ou semanticamente muito similar à resposta gabarito, considerando a pergunta original. "
-                f"\n\nPergunta Original: \"{pergunta_original}\""
-                f"\nResposta Esperada (Gabarito): \"{resposta_esperada}\""
-                f"\nResposta do Jogador: \"{resposta_jogador}\""
-                "\n\nA 'Resposta do Jogador' está correta ou é uma variação aceitável da 'Resposta Esperada'?"
-                "\nResponda APENAS com a palavra 'SIM' se estiver correta/aceitável, ou APENAS com 'NAO' se estiver incorreta."
+                "Você é um juiz em um jogo. Avalie se a resposta do jogador está certa "
+                f"com base na pergunta original e na resposta correta.\n\n"
+                f"Pergunta: \"{pergunta_original}\"\n"
+                f"Resposta Esperada: \"{resposta_esperada}\"\n"
+                f"Resposta do Jogador: \"{resposta_jogador}\"\n\n"
+                "Responda com 'SIM' se estiver certo ou 'NAO' se estiver errado."
             )
             try:
                 safety_settings = [{"category": c, "threshold": "BLOCK_NONE"} for c in [
@@ -155,7 +148,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                 response = gemini_model.generate_content(prompt, safety_settings=safety_settings)
                 resultado_da_ia = "SIM" in response.text.strip().upper()
             except Exception as e:
-                print(f"Erro ao chamar a API: {e}")
+                print(f"Erro ao chamar a IA: {e}")
                 resultado_da_ia = False
         verificando_com_ia_agora = False
         resposta_da_ia_pronta.set()
@@ -174,6 +167,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                 game_running = False
 
             if vencedor is None:
+                # Entrada de texto para resposta descritiva
                 if evento.type == pygame.KEYDOWN and fase == "pergunta_obstaculo" and not verificando_com_ia_agora:
                     if evento.key == pygame.K_RETURN and texto_input_obstaculo.strip() and pergunta_obstaculo_atual:
                         verificando_com_ia_agora = True
@@ -188,6 +182,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                     elif len(texto_input_obstaculo) < 150:
                         texto_input_obstaculo += evento.unicode
 
+                # Clique ou tecla para múltipla escolha
                 if fase == "pergunta_multipla" and pergunta_atual:
                     escolha = -1
                     if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
@@ -198,7 +193,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                     elif evento.type == pygame.KEYDOWN and evento.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4]:
                         try:
                             escolha = int(evento.unicode) - 1
-                        except (ValueError, IndexError):
+                        except:
                             pass
                     if escolha != -1 and 0 <= escolha < len(pergunta_atual["opcoes"]):
                         if escolha == pergunta_atual["resposta"]:
@@ -207,8 +202,8 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                         if carro_jogador.rect.x > LARGURA - 100:
                             set_vencedor(carro_jogador.nome)
 
+        # Verifica colisão com obstáculos
         if vencedor is None:
-            # Lógica de colisão para múltiplos obstáculos
             obstaculo_colidido = None
             for obstaculo in obstaculos_ativos:
                 if obstaculo["ativo"]:
@@ -217,8 +212,8 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                         obstaculo_colidido = obstaculo
                         break
 
-            if obstaculo_colidido and fase != "pergunta_obstaculo": # Garante que não entre novamente na fase da pergunta se já estiver lá
-                obstaculo_colidido["ativo"] = False # Marca o obstáculo como pego, mas não o remove da lista
+            if obstaculo_colidido and fase != "pergunta_obstaculo":
+                obstaculo_colidido["ativo"] = False
                 fase = "pergunta_obstaculo"
                 texto_input_obstaculo = ""
                 pergunta_obstaculo_atual = random.choice(pergunta_descritiva) if pergunta_descritiva else None
@@ -232,8 +227,6 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
                     bots_congelados = True
                     bots_descongelam_em = time.time() + DURACAO_CONGELAMENTO
                 fase = "pergunta_multipla"
-                # Não é necessário resetar obstaculo_pego, pois agora usamos obstaculos_ativos[i]["ativo"]
-                # obstaculo_pos_x = random.randint(LARGURA // 3, LARGURA - LARGURA // 3) # Não respawna, então removemos
                 pergunta_obstaculo_atual = None
                 resposta_da_ia_pronta.clear()
 
@@ -255,9 +248,8 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
             if time.time() > fim_timer:
                 game_running = False
 
-        # --- Renderização da tela ---
-        # A função desenhar_fundo precisa ser atualizada para iterar sobre obstaculos_ativos
-        desenhar_fundo(TELA, pista_img, obstaculo_img, obstaculos_ativos, carros) # Modificado aqui
+        # Renderiza tudo na tela
+        desenhar_fundo(TELA, pista_img, obstaculo_img, obstaculos_ativos, carros)
 
         if vencedor is None:
             if fase == "pergunta_multipla" and pergunta_atual:
@@ -296,6 +288,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
     stop_bots_event.set()
     return "menu"
 
+# Função principal do jogo
 def main():
     pygame.init()
     pygame.display.set_caption("Corrida Sensata")
