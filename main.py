@@ -116,7 +116,7 @@ def rodar_jogo(TELA, fonte, fonte_input, grande, clock):
             time.sleep(random.uniform(0.15, 0.6))
             if stop_event.is_set() or vencedor is not None:
                 break
-            carro_bot.mover(random.randint(1, 8))
+            carro_bot.mover(random.randint(1, 4))
             if carro_bot.rect.x > LARGURA - 100:
                 if semaforo_jogo.acquire(blocking=False):
                     try:

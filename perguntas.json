@@ -2,185 +2,355 @@
   "multipla_escolha": [
     {
       "id": 1,
-      "pergunta": "Qual a capital da França?",
-      "opcoes": ["Berlim", "Madri", "Paris", "Lisboa"],
-      "resposta": 2
-    },
-    {
-      "id": 2,
-      "pergunta": "Quem descobriu o Brasil?",
-      "opcoes": ["Dom Pedro I", "Pedro Álvares Cabral", "Tiradentes", "Machado de Assis"],
+      "pergunta": "Qual a função do SO?",
+      "opcoes": ["Navegar", "Gerenciar", "Criar", "Jogar"],
       "resposta": 1
     },
     {
+      "id": 2,
+      "pergunta": "Exemplo de SO?",
+      "opcoes": ["Word", "Chrome", "Windows", "Photo"],
+      "resposta": 2
+    },
+    {
       "id": 3,
-      "pergunta": "Qual é o resultado de 7 x 8?",
-      "opcoes": ["54", "56", "64", "58"],
+      "pergunta": "O que é um processo?",
+      "opcoes": ["Arquivo", "Programa em execução", "Hardware", "Comando"],
       "resposta": 1
     },
     {
       "id": 4,
-      "pergunta": "Qual elemento químico tem o símbolo O?",
-      "opcoes": ["Ouro", "Oxigênio", "Osmium", "Óxido"],
-      "resposta": 1
+      "pergunta": "Listar arquivos Linux?",
+      "opcoes": ["cd", "mkdir", "ls", "rm"],
+      "resposta": 2
     },
     {
       "id": 5,
-      "pergunta": "Qual oceano banha a costa leste do Brasil?",
-      "opcoes": ["Oceano Pacífico", "Oceano Atlântico", "Oceano Índico", "Oceano Ártico"],
-      "resposta": 1
+      "pergunta": "O que é deadlock?",
+      "opcoes": ["PC rápido", "Programas rápidos", "Processos bloqueados", "Internet cai"],
+      "resposta": 2
     },
     {
       "id": 6,
-      "pergunta": "Quantos continentes existem no mundo?",
-      "opcoes": ["4", "5", "6", "7"],
-      "resposta": 3
+      "pergunta": "Vantagem de threads?",
+      "opcoes": ["Mais memória", "Compartilham recursos", "Lentidão", "Difícil de programar"],
+      "resposta": 1
     },
     {
       "id": 7,
-      "pergunta": "Qual o maior animal terrestre?",
-      "opcoes": ["Girafa", "Elefante Africano", "Rinoceronte", "Hipopamo"],
-      "resposta": 1
+      "pergunta": "Criar diretório Linux?",
+      "opcoes": ["rmdir", "cp", "mkdir", "mv"],
+      "resposta": 2
     },
     {
       "id": 8,
-      "pergunta": "Quem pintou a Mona Lisa?",
-      "opcoes": ["Pablo Picasso", "Vincent van Gogh", "Leonardo da Vinci", "Claude Monet"],
-      "resposta": 2
+      "pergunta": "Kernel do SO é:",
+      "opcoes": ["Parte gráfica", "Núcleo do sistema", "Antivírus", "Impressora"],
+      "resposta": 1
     },
     {
       "id": 9,
-      "pergunta": "Qual é o maior planeta do nosso sistema solar?",
-      "opcoes": ["Marte", "Júpiter", "Saturno", "Terra"],
-      "resposta": 1
-    },
-    {
-      "id": 10,
-      "pergunta": "Quem escreveu 'Dom Quixote'?",
-      "opcoes": ["William Shakespeare", "Miguel de Cervantes", "Machado de Assis", "Gabriel García Márquez"],
-      "resposta": 1
-    },
-    {
-      "id": 11,
-      "pergunta": "Qual gás as plantas absorvem para fazer fotossíntese?",
-      "opcoes": ["Oxigênio", "Nitrogênio", "Dióxido de Carbono", "Hidrogênio"],
+      "pergunta": "Recursos em deadlock?",
+      "opcoes": ["Liberados", "Compartilhados", "Retidos esperando", "Ignorados"],
       "resposta": 2
     },
     {
+      "id": 10,
+      "pergunta": "Diferença: processo vs thread?",
+      "opcoes": ["Processo +rápido", "Thread tem memória própria", "Thread compartilha memória", "Sem diferença"],
+      "resposta": 2
+    },
+    {
+      "id": 11,
+      "pergunta": "Mudar diretório Linux?",
+      "opcoes": ["ls", "cd", "pwd", "cat"],
+      "resposta": 1
+    },
+    {
       "id": 12,
-      "pergunta": "Qual é a capital da Argentina?",
-      "opcoes": ["Santiago", "Montevidéu", "Bogotá", "Buenos Aires"],
-      "resposta": 3
+      "pergunta": "Multitarefa é?",
+      "opcoes": ["Um programa", "Vários programas ao mesmo tempo", "Desligar PC", "Instalar software"],
+      "resposta": 1
     },
     {
       "id": 13,
-      "pergunta": "Em que ano o homem pisou na lua pela primeira vez?",
-      "opcoes": ["1965", "1969", "1972", "1959"],
+      "pergunta": "Qual NÃO causa deadlock?",
+      "opcoes": ["Exclusão Mútua", "Preempção", "Espera Circular", "Posse e Espera"],
       "resposta": 1
     },
     {
       "id": 14,
-      "pergunta": "Qual destes animais é um mamífero marinho?",
-      "opcoes": ["Tubarão", "Orca", "Salmão", "Enguia"],
+      "pergunta": "Agendador de processos faz o quê?",
+      "opcoes": ["Organiza arquivos", "Decide qual processo executa", "Cria backup", "Edita texto"],
       "resposta": 1
     },
     {
       "id": 15,
-      "pergunta": "Qual o componente principal do vidro?",
-      "opcoes": ["Ferro", "Areia", "Plástico", "Alumínio"],
-      "resposta": 1
+      "pergunta": "Qual comando mostra diretório atual?",
+      "opcoes": ["ls", "cd", "pwd", "touch"],
+      "resposta": 2
     },
     {
       "id": 16,
-      "pergunta": "Qual a montanha mais alta do mundo?",
-      "opcoes": ["K2", "Monte Everest", "Monte Fuji", "Monte Kilimanjaro"],
+      "pergunta": "O que evita deadlock?",
+      "opcoes": ["Exclusão Mútua", "Espera Circular", "Preempção", "Posse e Espera"],
       "resposta": 1
     },
     {
       "id": 17,
-      "pergunta": "Qual o maior rio do mundo em volume de água?",
-      "opcoes": ["Rio Nilo", "Rio Amazonas", "Rio Mississipi", "Rio Yangtzé"],
+      "pergunta": "RAM é:",
+      "opcoes": ["Armazena fotos", "Memória temporária para programas", "Processador", "HD externo"],
       "resposta": 1
     },
     {
       "id": 18,
-      "pergunta": "Qual país tem o maior número de pirâmides?",
-      "opcoes": ["Egito", "Sudão", "México", "China"],
-      "resposta": 1
+      "pergunta": "Ver conteúdo de arquivo Linux?",
+      "opcoes": ["cp", "mv", "cat", "rm"],
+      "resposta": 2
     },
     {
       "id": 19,
-      "pergunta": "Qual o menor país do mundo?",
-      "opcoes": ["Mônaco", "Vaticano", "Nauru", "San Marino"],
+      "pergunta": "Desvantagem: processos vs threads?",
+      "opcoes": ["Memória fácil", "Custo de criação/comunicação", "Mais leves", "Não usam multitarefa"],
       "resposta": 1
     },
     {
       "id": 20,
-      "pergunta": "Qual animal é conhecido por ter 8 braços?",
-      "opcoes": ["Estrela do Mar", "Lula", "Polvo", "Medusa"],
-      "resposta": 2
+      "pergunta": "Sistema de arquivos é:",
+      "opcoes": ["Calculadora", "Organiza arquivos no disco", "Ferramenta de rede", "Impressora"],
+      "resposta": 1
     },
     {
       "id": 21,
-      "pergunta": "Qual o nome do primeiro homem a viajar para o espaço?",
-      "opcoes": ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "Valentina Tereshkova"],
+      "pergunta": "Copiar arquivos Linux?",
+      "opcoes": ["mv", "rm", "cp", "touch"],
       "resposta": 2
     },
     {
       "id": 22,
-      "pergunta": "Qual é a língua mais falada no mundo?",
-      "opcoes": ["Inglês", "Espanhol", "Mandarim", "Hindi"],
-      "resposta": 2
+      "pergunta": "Preempção para deadlock:",
+      "opcoes": ["Processo segura recursos", "Força liberar recurso", "Evita novos processos", "Acelera PC"],
+      "resposta": 1
     },
     {
       "id": 23,
-      "pergunta": "Qual é o nome do criador da Microsoft?",
-      "opcoes": ["Steve Jobs", "Mark Zuckerberg", "Bill Gates", "Elon Musk"],
-      "resposta": 2
+      "pergunta": "Função do shell no Linux?",
+      "opcoes": ["Editor imagens", "Interpretador de comandos", "Navegador", "Gerenciador gráfico"],
+      "resposta": 1
     },
     {
       "id": 24,
-      "pergunta": "Qual instrumento musical tem cordas e é tocado com um arco?",
-      "opcoes": ["Guitarra", "Violino", "Piano", "Flauta"],
+      "pergunta": "O que significa CPU?",
+      "opcoes": ["Program Unit", "Processing Unit", "Power Utility", "Processing Update"],
       "resposta": 1
     },
     {
       "id": 25,
-      "pergunta": "Qual o maior deserto do mundo?",
-      "opcoes": ["Deserto do Saara", "Deserto da Arábia", "Deserto de Gobi", "Deserto da Antártida"],
+      "pergunta": "Remover arquivos Linux?",
+      "opcoes": ["cp", "mv", "rm", "mkdir"],
+      "resposta": 2
+    },
+    {
+      "id": 26,
+      "pergunta": "Thread: 'context switch' é?",
+      "opcoes": ["Troca de arquivos", "Troca da CPU entre threads", "Mudar idioma", "Reiniciar programa"],
+      "resposta": 1
+    },
+    {
+      "id": 27,
+      "pergunta": "Driver de dispositivo?",
+      "opcoes": ["Antivírus", "Software que conecta SO e hardware", "Jogo de corrida", "Cabo de rede"],
+      "resposta": 1
+    },
+    {
+      "id": 28,
+      "pergunta": "Mover/renomear Linux?",
+      "opcoes": ["cp", "rm", "mv", "ls"],
+      "resposta": 2
+    },
+    {
+      "id": 29,
+      "pergunta": "Qual NÃO é método de lidar com deadlocks?",
+      "opcoes": ["Prevenção", "Detecção", "Ignorar", "Aumentar prioridade"],
       "resposta": 3
+    },
+    {
+      "id": 30,
+      "pergunta": "Memória virtual é?",
+      "opcoes": ["Pendrive", "Disco como RAM extra", "Editor de vídeo", "Vírus"],
+      "resposta": 1
+    },
+    {
+      "id": 31,
+      "pergunta": "Criar arquivo vazio Linux?",
+      "opcoes": ["cat", "echo", "touch", "less"],
+      "resposta": 2
+    },
+    {
+      "id": 32,
+      "pergunta": "Característica de threads leves?",
+      "opcoes": ["Memória separada", "Compartilham memória", "Mais lentas", "Não se comunicam"],
+      "resposta": 1
+    },
+    {
+      "id": 33,
+      "pergunta": "GUI é?",
+      "opcoes": ["Digitar comandos", "Forma visual de interagir", "Tipo de teclado", "Programa de segurança"],
+      "resposta": 1
+    },
+    {
+      "id": 34,
+      "pergunta": "Buscar padrões em arquivos Linux?",
+      "opcoes": ["find", "search", "grep", "locate"],
+      "resposta": 2
+    },
+    {
+      "id": 35,
+      "pergunta": "Exclusão Mútua em deadlock?",
+      "opcoes": ["Vários acessam recurso", "Um recurso por vez", "Sem recursos compartilhados", "Processos não esperam"],
+      "resposta": 1
+    },
+    {
+      "id": 36,
+      "pergunta": "Swap space é?",
+      "opcoes": ["RAM para jogos", "Disco como memória virtual", "Arquivos temporários", "Dispositivo E/S"],
+      "resposta": 1
+    },
+    {
+      "id": 37,
+      "pergunta": "Ver manual de comando Linux?",
+      "opcoes": ["help", "info", "man", "doc"],
+      "resposta": 2
+    },
+    {
+      "id": 38,
+      "pergunta": "Se uma thread falha?",
+      "opcoes": ["Só a thread falha", "Processo todo falha", "SO trava", "CPU desliga"],
+      "resposta": 1
+    },
+    {
+      "id": 39,
+      "pergunta": "Objetivo do gerenciamento de processos?",
+      "opcoes": ["Iniciar programas", "Alocar recursos e controlar execução", "Excluir arquivos", "Ver internet"],
+      "resposta": 1
+    },
+    {
+      "id": 40,
+      "pergunta": "Encerrar processo Linux?",
+      "opcoes": ["stop", "kill", "exit", "halt"],
+      "resposta": 1
+    },
+    {
+      "id": 41,
+      "pergunta": "Espera Circular em deadlocks?",
+      "opcoes": ["Processos em fila", "Processos esperam em ciclo", "Comunicação circular", "Sem espera"],
+      "resposta": 1
+    },
+    {
+      "id": 42,
+      "pergunta": "Papel do sistema de arquivos?",
+      "opcoes": ["Gerenciar RAM", "Controlar acesso a arquivos", "Formatar discos", "Rodar áudio"],
+      "resposta": 1
+    },
+    {
+      "id": 43,
+      "pergunta": "Comando Linux superusuário?",
+      "opcoes": ["doas", "user", "sudo", "admin"],
+      "resposta": 2
+    },
+    {
+      "id": 44,
+      "pergunta": "Sincronização de threads?",
+      "opcoes": ["Velocidades diferentes", "Acesso ordenado a recursos", "Criar mais threads", "Parar threads"],
+      "resposta": 1
+    },
+    {
+      "id": 45,
+      "pergunta": "Função do escalonador de CPU?",
+      "opcoes": ["Excluir arquivos", "Decidir qual processo usa CPU", "Gerenciar rede", "Controlar impressora"],
+      "resposta": 1
+    },
+    {
+      "id": 46,
+      "pergunta": "Ver processos em execução Linux?",
+      "opcoes": ["top", "run", "processes", "exec"],
+      "resposta": 0
+    },
+    {
+      "id": 47,
+      "pergunta": "Multiprogramação é?",
+      "opcoes": ["Um programa por vez", "Vários programas na memória, CPU alterna", "Vários monitores", "Múltiplos SOs"],
+      "resposta": 1
+    },
+    {
+      "id": 48,
+      "pergunta": "Benefício de threads para concorrência?",
+      "opcoes": ["Isolamento total", "Menor sobrecarga de comunicação", "Complexidade na depuração", "Sem sincronização"],
+      "resposta": 1
+    },
+    {
+      "id": 49,
+      "pergunta": "Compactar arquivos Linux?",
+      "opcoes": ["unzip", "tar", "gzip", "compress"],
+      "resposta": 2
+    },
+    {
+      "id": 50,
+      "pergunta": "Função do gerenciamento de memória?",
+      "opcoes": ["Armazenar dados", "Controlar alocação de memória", "Limpar disco", "Gerenciar áudio"],
+      "resposta": 1
     }
   ],
   "descritiva": [
     {
       "id": "01",
-      "pergunta": "O que é um 'deadlock' em Sistemas Operacionais? (Conceito principal)",
-      "resposta_certa": "Processos bloqueados mutuamente esperando por recursos retidos por outros."
+      "pergunta": "O que é deadlock? Cite 2 condições.",
+      "resposta_certa": "Processos travados esperando recursos. Condições: Exclusão Mútua, Posse e Espera, Não Preempção, Espera Circular."
     },
     {
       "id": "02",
-      "pergunta": "Qual a principal vantagem de usar threads em vez de processos para tarefas concorrentes numa mesma aplicação?",
-      "resposta_certa": "Compartilhamento de memória eficiente e menor custo de criação e comunicação."
+      "pergunta": "Vantagem de threads sobre processos na concorrência?",
+      "resposta_certa": "Compartilhamento de memória eficiente e menor custo de comunicação/criação."
     },
     {
       "id": "03",
-      "pergunta": "Para que serve o comando 'grep' no Linux? (Função primária)",
-      "resposta_certa": "Buscar padrões ou palavras específicas em arquivos de texto."
+      "pergunta": "Cite e explique 2 comandos Linux essenciais.",
+      "resposta_certa": "Ex: 'ls' (listar), 'cd' (mudar diretório), 'mkdir' (criar diretório), 'rm' (remover), 'cp' (copiar), 'mv' (mover/renomear), 'cat' (ver conteúdo)."
     },
     {
       "id": "04",
-      "pergunta": "Por que existe a separação entre 'modo kernel' e 'modo usuário' em um SO?",
-      "resposta_certa": "Para proteger o sistema operacional e o hardware de falhas ou acessos indevidos das aplicações."
+      "pergunta": "Por que o gerenciamento de memória é crucial?",
+      "resposta_certa": "Garante alocação eficiente de RAM, previne interferência entre programas e otimiza uso."
     },
     {
-      "id": "04",
-      "pergunta": "No contexto de Sistemas Operacionais, qual é o significado da sigla CLI?",
-      "resposta_certa": "Interface de Linha de Comando"
+      "id": "05",
+      "pergunta": "Diferença: modo kernel e modo usuário?",
+      "resposta_certa": "Kernel: acesso total (SO). Usuário: acesso restrito (aplicativos). Protege o sistema."
     },
     {
       "id": "06",
-      "pergunta": "No contexto de Sistemas Operacionais, qual é o significado da sigla GUI?",
-      "resposta_certa": "Interface gráfica do usuário"
+      "pergunta": "Qual a função do escalonador de CPU?",
+      "resposta_certa": "Decidir qual processo/thread usará a CPU e por quanto tempo."
+    },
+    {
+      "id": "07",
+      "pergunta": "O que é CLI? Vantagem/Desvantagem.",
+      "resposta_certa": "Interface de Linha de Comando (texto). Vantagem: automação. Desvantagem: exige memorização."
+    },
+    {
+      "id": "08",
+      "pergunta": "Para que serve a sincronização de threads?",
+      "resposta_certa": "Coordenar acesso a recursos compartilhados, evitando erros (condições de corrida)."
+    },
+    {
+      "id": "09",
+      "pergunta": "Diferença: RAM e memória virtual.",
+      "resposta_certa": "RAM: memória física principal. Virtual: usa disco como RAM extra, é mais lenta."
+    },
+    {
+      "id": "10",
+      "pergunta": "Cite e explique 1 método de prevenção de deadlock.",
+      "resposta_certa": "Ex: Quebrar Espera Circular (definir ordem de recursos) ou Não Preempção (SO pode tirar recurso)."
     }
   ]
 }
